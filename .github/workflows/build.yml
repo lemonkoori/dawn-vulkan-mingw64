@@ -1,11 +1,8 @@
 name: build-dawn-msys2
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 0"
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 jobs:
   build:
     runs-on: windows-latest
@@ -46,10 +43,8 @@ jobs:
           cd dawn
           cmake --install out/Release --prefix dawn-x86-64-windows-gnu-release
           tar -czf dawn-x86-64-windows-gnu-release.tar.gz dawn-x86-64-windows-gnu-release
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Release
+        uses: softprops/action-gh-release@v2.6.1
         with:
-          name: dawn-x86-64-windows-gnu-release
-          path: dawn/dawn-x86-64-windows-gnu-release.tar.gz
-          if-no-files-found: error
-          compression-level: 0
+          files: |
+            dawn/dawn-x86-64-windows-gnu-release.tar.gz
