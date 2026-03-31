@@ -1,0 +1,36 @@
+name: build-dawn-msys2
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: UCRT64
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-git
+
+      # Runs a single command using the runners shell
+      - name: Clone and Build
+        shell: msys2 {0}
+        run: |
+          git clone https://dawn.googlesource.com/dawn
+          cd dawn
+          python tools/fetch_dawn_dependencies.py
+          mkdir -p out/Debug
+          cd out/Debug
+          cmake -S ../.. -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -D DAWN_USE_WINDOWS_UI=OFF -D TINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
+          ninja
+          cd ../..
+          cmake --install out/Release --prefix install/Release
