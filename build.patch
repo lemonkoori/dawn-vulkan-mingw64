@@ -1,13 +1,14 @@
 diff --git a/src/tint/utils/file/tmpfile_windows.cc b/src/tint/utils/file/tmpfile_windows.cc
-index 4d08bd56e0..8b31c9fcb5 100644
+index 4d08bd56e0..c892ea613b 100644
 --- a/src/tint/utils/file/tmpfile_windows.cc
 +++ b/src/tint/utils/file/tmpfile_windows.cc
-@@ -35,6 +35,8 @@
+@@ -35,7 +35,8 @@
  #include <fcntl.h>
  #include <io.h>
  #include <stdio.h>
+-
 +#include <share.h>
 +#include <sys/stat.h>
- 
  #include <cstdio>
  
+ #include "src/tint/utils/file/tmpfile.h"
