@@ -18,23 +18,29 @@ jobs:
           msystem: UCRT64
           install: >-
             mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-python
       - name: Clone, Patch and Fetch Dependencies
         shell: pwsh
         run: |
           git clone https://dawn.googlesource.com/dawn
           cd dawn
-          git apply --union "${{ github.workspace }}/build.patch"
+          git apply --3way --union "${{ github.workspace }}/build.patch"
           python tools/fetch_dawn_dependencies.py
+      - name: Cmake
+        shell: pwsh
+        run: |
+          cd dawn
+          mkdir out/Release
+          cmake -S . -B out/Release -G Ninja -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -DDAWN_USE_WINDOWS_UI=OFF -DTINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
       - name: Build
         shell: msys2 {0}
         run: |
-          mkdir -p out/Debug
-          cd out/Debug
-          cmake -S ../.. -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -D DAWN_USE_WINDOWS_UI=OFF -D TINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
+          cd dawn/out/Release
           ninja
-          cd ../..
+      - name: Install
+        shell: pwsh
+        run: |
+          cd dawn
           cmake --install out/Release --prefix dawn-x86-64-windows-gnu-release
           tar -czf dawn-x86-64-windows-gnu-release.tar.gz dawn-x86-64-windows-gnu-release
       - name: Upload Artifacts
