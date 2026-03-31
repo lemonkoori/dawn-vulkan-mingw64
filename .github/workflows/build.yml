@@ -27,10 +27,19 @@ jobs:
         run: |
           git clone https://dawn.googlesource.com/dawn
           cd dawn
+          git apply "${{ github.workspace }}/build.patch"
           python tools/fetch_dawn_dependencies.py
           mkdir -p out/Debug
           cd out/Debug
           cmake -S ../.. -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -D DAWN_USE_WINDOWS_UI=OFF -D TINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
           ninja
           cd ../..
-          cmake --install out/Release --prefix install/Release
+          cmake --install out/Release --prefix dawn-x86-64-windows-gnu-release
+          tar -czf dawn-x86-64-windows-gnu-release.tar.gz dawn-x86-64-windows-gnu-release
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dawn-x86-64-windows-gnu-release
+          path: dawn-x86-64-windows-gnu-release.tar.gz
+          if-no-files-found: error
+          compression-level: 0
