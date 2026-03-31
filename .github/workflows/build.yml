@@ -19,6 +19,7 @@ jobs:
           install: >-
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-cmake
       - name: Clone, Patch and Fetch Dependencies
         shell: pwsh
         run: |
@@ -26,7 +27,7 @@ jobs:
           cd dawn
           python tools/fetch_dawn_dependencies.py
       - name: Cmake
-        shell: pwsh
+        shell: msys2 {0}
         run: |
           cd dawn
           mkdir out/Release
@@ -40,7 +41,7 @@ jobs:
           cd out/Release
           ninja
       - name: Install
-        shell: pwsh
+        shell: msys2 {0}
         run: |
           cd dawn
           cmake --install out/Release --prefix dawn-x86-64-windows-gnu-release
