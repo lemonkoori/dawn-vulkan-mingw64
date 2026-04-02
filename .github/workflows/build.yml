@@ -25,28 +25,28 @@ jobs:
           git clone https://dawn.googlesource.com/dawn
           cd dawn
           python tools/fetch_dawn_dependencies.py
-      - name: Cmake
-        shell: msys2 {0}
-        run: |
-          cd dawn
-          mkdir -p out/Release
-          cmake -S . -B out/Release -G Ninja -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -DDAWN_USE_WINDOWS_UI=OFF -DTINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
       - name: Build
         shell: msys2 {0}
         run: |
           cd dawn
           sed -i '37a #include <share.h>\n#include <sys/stat.h>' ./src/tint/utils/file/tmpfile_windows.cc
           sed -n '35,40p' ./src/tint/utils/file/tmpfile_windows.cc
+          mkdir -p out/Release
+          cmake -S . -B out/Release -G"Ninja" -Dprotobuf_BUILD_SHARED_LIBS="OFF" -Dprotobuf_BUILD_TESTS="OFF" -Dprotobuf_WITH_ZLIB="ON" -DBUILD_SHARED_LIBS=OFF -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -DDAWN_USE_WINDOWS_UI=OFF -DTINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release
           cd out/Release
           ninja
-      - name: Install
-        shell: msys2 {0}
-        run: |
-          cd dawn
-          cmake --install out/Release --prefix dawn-x86-64-windows-gnu-release
-          tar -czf dawn-x86-64-windows-gnu-release.tar.gz dawn-x86-64-windows-gnu-release
+          cd ../..
+          cmake --install out/Release --prefix dawn-x86-64-windows-gnu-static-release
+          cmake -S . -B out/Release -G"Ninja" -Dprotobuf_BUILD_SHARED_LIBS="OFF" -Dprotobuf_BUILD_TESTS="OFF"  -Dprotobuf_WITH_ZLIB="ON" -DBUILD_SHARED_LIBS=OFF -DDAWN_ENABLE_D3D12=OFF -DDAWN_ENABLE_D3D11=OFF -DDAWN_ENABLE_VULKAN=ON -DDAWN_USE_GLFW=OFF -DDAWN_BUILD_SAMPLES=OFF -DDAWN_ENABLE_NULL=OFF -DDAWN_USE_WINDOWS_UI=OFF -DTINT_BUILD_HLSL_WRITER=OFF -DDAWN_ENABLE_INSTALL=ON -DCMAKE_BUILD_TYPE=Release -DDAWN_BUILD_MONOLITHIC_LIBRARY=SHARED -DCMAKE_CXX_STANDARD_LIBRARIES="-static-libgcc -static-libstdc++ -static -ldbghelp"
+          cd out/Release
+          ninja
+          cd ../..
+          cmake --install out/Release --prefix dawn-x86-64-windows-gnu-dynamic-release
+          tar -czf dawn-x86-64-windows-gnu-dynamic-release.tar.gz dawn-x86-64-windows-gnu-dynamic-release
+          tar -czf dawn-x86-64-windows-gnu-static-release.tar.gz dawn-x86-64-windows-gnu-static-release
       - name: Release
         uses: softprops/action-gh-release@v2.6.1
         with:
           files: |
-            dawn/dawn-x86-64-windows-gnu-release.tar.gz
+            dawn/dawn-x86-64-windows-gnu-dynamic-release.tar.gz
+            dawn/dawn-x86-64-windows-gnu-static-release.tar.gz
